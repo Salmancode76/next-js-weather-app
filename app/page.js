@@ -1,95 +1,64 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+import CountrySelector from "./CountrySelector";
+import { useEffect, useState } from "react";
 
 export default function Home() {
+  const [icon, setIcon] = useState("");
+  const [data, setData] = useState();
+  const [place, setPlace] = useState("bahrain");
+
+  useEffect(() => {
+    fetch(
+      "https://api.openweathermap.org/data/2.5/weather?q=" +
+        place +
+        "&appid=1f84752ac78a53830b09fe89a2082194&units=metric",
+      { next: { revalidate: 1 } }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        setData(data);
+        if (data && data.weather && data.weather[0] && data.weather[0].icon) {
+          setIcon(
+            "http://openweathermap.org/img/w/" + data.weather[0].icon + ".png"
+          );
+        } else {
+          setIcon(""); 
+        }
+      });
+  }, [place]);
+
+  const handleChange = (selectedOption) => {
+    setPlace(selectedOption.label);
+  };
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
+    <main className="main_content">
+      <header className="header_main">
+        <CountrySelector onChange={handleChange} className="countryCombo" />
+      </header>
+      <div className="result">
+      {icon && (
+          <img
+            src={icon}
+            alt="weather icon"
+            className="state_img"
+          />
+        )}
+        <span className="temp">
+          {data ? (data.main ? data.main.temp : "No data") : "Loading"}
+        </span>
+        <span className="desc">
+          Country: {data ? (data.main ? data.name : "No data") : "Loading"}
+        </span>
+        <span className="desc">
+          Humidity: {data ? (data.main ? data.main.humidity : "No data") : "Loading"}
+        </span>
+        <span className="desc">
+          Weather: {data ? (data.main ? data.weather[0].description : "No data") : "Loading"}
+        </span>
+       
       </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
+ 
     </main>
   );
 }
